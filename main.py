@@ -1,27 +1,10 @@
 import pygame as pg
 from pygame.locals import *
 from icecream import ic
+# todo убрать белый фон у человечка
 
 
 
-def man_run_quickly(show_man,start_home,dect_home,man_rect,man_rect_center,man_dist,man_step,man):
-    if show_man:
-        if start_home != dect_home:
-            man_dist = dect_home - man_rect_center
-
-            if start_home_rect.centerx > dect_home:
-                if man_dist > 0:
-                    show_man = False
-            else:
-                if man_dist < 0:
-                    show_man = False
-
-            if start_home > dect_home:
-                man_rect_center -= man_step
-            else:
-                man_rect_center += man_step
-            display.blit(man, man_rect)
-            return show_man
 def create_home(path: str, center_x, center_y, x_divider=1, y_divider=1):
     """
     добовляет дом
@@ -85,7 +68,7 @@ pg.display.set_caption("это я")
 # картинка дома
 home1, home1_rect = create_home('HOME LEVEL1.png', window_w, window_h, 15, 2)
 home2, home2_rect = create_home('HOME LEVEL1.png', window_w, window_h, 4, 2)
-home3, home3_rect = create_home('HOME LEVEL1.png', window_w, window_h, 10, 5)
+home3, home3_rect = create_home('HOME LEVEL1.png', window_w, window_h, 15, 5)
 start_home_rect = None
 dest_home_rect = None
 dest_home_menu = None
@@ -104,6 +87,8 @@ man_dist_x = 0
 man_dist_y = 0
 man_step_x = 1
 man_step_y = 1
+man_rect_clonex = 0
+man_rect_cloney = 0
 k = 0
 
 # MENU
@@ -188,8 +173,8 @@ while running:
                 dest_home_rect = home3_rect
 
             man_rect.center = start_home_rect.center
-            dist_x = start_home_rect.centerx - dest_home_rect.centerx
-            dist_y = start_home_rect.centery - dest_home_rect.centery
+            dist_x = abs(start_home_rect.centerx - dest_home_rect.centerx)
+            dist_y = abs(start_home_rect.centery - dest_home_rect.centery)
 
             if dist_y > dist_x:
                 if dist_y != 0:
@@ -199,7 +184,8 @@ while running:
                 if dist_x != 0:
                     man_step_y = abs(dist_y / dist_x)
                     man_step_x = 1
-
+            man_rect_clonx = man_rect.centerx
+            man_rect_clony = man_rect.centery
             ic(man_step_y, man_step_x)
             ic(start_home_rect.centerx, start_home_rect.centery, dest_home_rect.centerx, dest_home_rect.centery, dist_y,
                dist_x)
@@ -222,7 +208,7 @@ while running:
     blit_menu(show_menu1, menu, home1_rect.center, army_menu, some_color)
     blit_menu(show_menu2, menu, home2_rect.center, army_menu, some_color)
     blit_menu(show_menu3, menu, home3_rect.center, army_menu, some_color)
-    '''
+
     if show_man:
         if start_home_rect.centerx != dest_home_rect.centerx:
             man_dist_x = dest_home_rect.centerx - man_rect.centerx
@@ -235,31 +221,35 @@ while running:
                     show_man = False
 
             if start_home_rect.centerx > dest_home_rect.centerx:
-                man_rect.centerx -= man_step_x
+                man_rect_clonx -= man_step_x
+                man_rect.centerx = man_rect_clonx
+
             else:
-                man_rect.centerx += man_step_x
+                man_rect_clonx += man_step_x
+                man_rect.centerx = man_rect_clonx
+
             display.blit(man, man_rect)
-    '''
-    man_run_quickly(show_man, start_home_rect.centerx, dest_home_rect.centerx, man_rect, man_rect.centerx, man_dist_x,
-                    man_step_x, man)
 
-    if start_home_rect.centery == dest_home_rect.centery:
-        continue
-    man_dist_y = dest_home_rect.centery - man_rect.centery
-    if start_home_rect.centery > dest_home_rect.centery:
-        if man_dist_y > 0:
-            show_man = False
-    else:
-        if man_dist_y < 0:
-            show_man = False
-    if start_home_rect.centery > dest_home_rect.centery:
-        man_rect.centery -= man_step_y
-    else:
-        man_rect.centery += man_step_y
-    display.blit(man, man_rect)
-    man_step_x = 1
-    man_step_y = 1
 
+
+
+        if start_home_rect.centery != dest_home_rect.centery:
+            man_dist_y = dest_home_rect.centery - man_rect.centery
+            if start_home_rect.centery > dest_home_rect.centery:
+                if man_dist_y > 0:
+                    show_man = False
+            else:
+                if man_dist_y < 0:
+                    show_man = False
+            if start_home_rect.centery > dest_home_rect.centery:
+                man_rect_clony -= man_step_y
+                man_rect.centery = man_rect_clony
+            else:
+                man_rect_clony += man_step_y
+                man_rect.centery = man_rect_clony
+            display.blit(man, man_rect)
+
+        ic(man_rect.centerx,man_rect.centery)
     # Перерисовка экрана
     pg.display.update()
 

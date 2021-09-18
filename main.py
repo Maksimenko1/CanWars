@@ -1,7 +1,7 @@
 import pygame as pg
 from pygame.locals import *
 from icecream import ic
-# todo убрать белый фон у человечка
+
 
 
 
@@ -67,7 +67,7 @@ pg.display.set_caption("это я")
 
 # картинка дома
 home1, home1_rect = create_home('HOME LEVEL1.png', window_w, window_h, 15, 2)
-home2, home2_rect = create_home('HOME LEVEL1.png', window_w, window_h, 4, 2)
+home2, home2_rect = create_home('HOME LEVEL1.png', window_w, window_h, 2, 2)
 home3, home3_rect = create_home('HOME LEVEL1.png', window_w, window_h, 15, 5)
 start_home_rect = None
 dest_home_rect = None
@@ -80,9 +80,11 @@ fps = 30
 clock = pg.time.Clock()
 
 #  человечек
-man = pg.image.load('юнит(свой).jpg')
+man_image = pg.image.load('юнит(свой).png')
 show_man = False
-man_rect = man.get_rect()
+initial_man_rect = man_image.get_rect()
+men = []
+moving_man_counter = 0
 man_dist_x = 0
 man_dist_y = 0
 man_step_x = 1
@@ -95,7 +97,8 @@ k = 0
 menu = pg.image.load('Blue_rectangle.png')
 menu_rect = menu.get_rect()
 show_menu1 = False
-army_num = '0'
+army_num = '1'
+army_num_default = 1
 army_padding = 5  # px
 show_menu2 = False
 show_menu3 = False
@@ -141,19 +144,19 @@ while running:
             show_menu1 = True
         else:
             show_menu1 = False
-            army_num = 0
+            army_num = army_num_default
 
         if mouse_touched_home2:
             show_menu2 = True
         else:
             show_menu2 = False
-            army_num = 0
+            army_num = army_num_default
 
         if mouse_touched_home3:
             show_menu3 = True
         else:
             show_menu3 = False
-            army_num = 0
+            army_num = army_num_default
 
     # логика узнавания x и y для ходьбы
     mouse_rightbtn_pressed = pg.mouse.get_pressed()[2]
@@ -172,7 +175,13 @@ while running:
             if mouse_touched_home3:  # dest_home_mtouched
                 dest_home_rect = home3_rect
 
-            man_rect.center = start_home_rect.center
+            for _ in range(army_num):
+                men.append(initial_man_rect.copy())
+            moving_man_counter = 1
+            ic(men)
+            ic(moving_man_counter)
+            for man_rect in men:
+                man_rect.center = start_home_rect.center
             dist_x = abs(start_home_rect.centerx - dest_home_rect.centerx)
             dist_y = abs(start_home_rect.centery - dest_home_rect.centery)
 
@@ -184,8 +193,8 @@ while running:
                 if dist_x != 0:
                     man_step_y = abs(dist_y / dist_x)
                     man_step_x = 1
-            man_rect_clonx = man_rect.centerx
-            man_rect_clony = man_rect.centery
+            # man_rect_clonx = man_rect.centerx
+            # man_rect_clony = man_rect.centery
             ic(man_step_y, man_step_x)
             ic(start_home_rect.centerx, start_home_rect.centery, dest_home_rect.centerx, dest_home_rect.centery, dist_y,
                dist_x)
@@ -193,6 +202,7 @@ while running:
             show_menu1 = False
             show_menu2 = False
             show_menu3 = False
+
 
     # Конвертация текста в картинку
     army_num = str(army_num)
@@ -211,45 +221,58 @@ while running:
 
     if show_man:
         if start_home_rect.centerx != dest_home_rect.centerx:
-            man_dist_x = dest_home_rect.centerx - man_rect.centerx
 
-            if start_home_rect.centerx > dest_home_rect.centerx:
-                if man_dist_x > 0:
-                    show_man = False
-            else:
-                if man_dist_x < 0:
-                    show_man = False
+            for i, man_rect in enumerate(men):
+                if not men[moving_man_counter - 1].colliderect(start_home_rect):
+                    army_num = int(army_num)
+                    if moving_man_counter < army_num :
+                        moving_man_counter += 1
+                    army_num = str(army_num)
 
-            if start_home_rect.centerx > dest_home_rect.centerx:
-                man_rect_clonx -= man_step_x
-                man_rect.centerx = man_rect_clonx
+                if i == moving_man_counter:
+                    break
 
-            else:
-                man_rect_clonx += man_step_x
-                man_rect.centerx = man_rect_clonx
+                man_dist_x = dest_home_rect.centerx -man_rect.centerx
 
-            display.blit(man, man_rect)
+                if start_home_rect.centerx > dest_home_rect.centerx:
+                    if man_dist_x > 0:
+                        show_man = False
+                        men.clear()
+                else:
+                    if man_dist_x < 0:
+                        show_man = False
+                        men.clear()
 
+                if start_home_rect.centerx > dest_home_rect.centerx:
+                    # man_rect_clonx -= man_step_x
+                    # man_rect.centerx = man_rect_clonx
+                    man_rect.centerx -= man_step_x
+                else:
+                    # man_rect_clonx += man_step_x
+                    # man_rect.centerx = man_rect_clonx
+                    man_rect.centerx += man_step_x
 
+                display.blit(man_image, man_rect)
 
+            # if start_home_rect.centery != dest_home_rect.centery:
+            #     man_dist_y = dest_home_rect.centery - man_rect.centery
+            #     if start_home_rect.centery > dest_home_rect.centery:
+            #         if man_dist_y > 0:
+            #             show_man = False
+            #     else:
+            #         if man_dist_y < 0:
+            #             show_man = False
+            #     if start_home_rect.centery > dest_home_rect.centery:
+            #         # man_rect_clony -= man_step_y
+            #         # man_rect.centery = man_rect_clony
+            #         man_rect.centery -= man_step_y
+            #     else:
+            #         # man_rect_clony += man_step_y
+            #         # man_rect.centery = man_rect_clony
+            #         man_rect.centery += man_step_y
+            #     display.blit(man_image, man_rect)
 
-        if start_home_rect.centery != dest_home_rect.centery:
-            man_dist_y = dest_home_rect.centery - man_rect.centery
-            if start_home_rect.centery > dest_home_rect.centery:
-                if man_dist_y > 0:
-                    show_man = False
-            else:
-                if man_dist_y < 0:
-                    show_man = False
-            if start_home_rect.centery > dest_home_rect.centery:
-                man_rect_clony -= man_step_y
-                man_rect.centery = man_rect_clony
-            else:
-                man_rect_clony += man_step_y
-                man_rect.centery = man_rect_clony
-            display.blit(man, man_rect)
-
-        ic(man_rect.centerx,man_rect.centery)
+        # ic(man_rect.centerx,man_rect.centery)
     # Перерисовка экрана
     pg.display.update()
 
